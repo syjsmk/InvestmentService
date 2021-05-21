@@ -62,19 +62,4 @@ public class InvestmentServiceController {
                 });
     }
 
-//    @GetMapping("/investmentgoods")
-//    public Flux<InvestmentGoodsVO> selectAllInvestmentGoods(@RequestParam String startedAt, @RequestParam String finishedAt) {
-//        return investmentService.selectAllInvestmentGoods(startedAt, finishedAt);
-//    }
-//
-//    @PostMapping("/user/investmentgoods")
-//    public Mono<UserInvestmentGoods> invest(@RequestHeader("X-USER-ID") Integer userId, @RequestBody UserInvestDTO userInvestDto) {
-//        return investmentService.invest(userId, userInvestDto.getGoodsId(), userInvestDto.getInvestmentAmount());
-//    }
-//
-//    @GetMapping("/user/investmentgoods")
-//    public Flux<UserInvestmentGoodsVO> selectUserInvestmentGoods(@RequestHeader("X-USER-ID") Integer userId) {
-//        return investmentService.selectUserInvestmentGoods(userId);
-//    }
-
 }

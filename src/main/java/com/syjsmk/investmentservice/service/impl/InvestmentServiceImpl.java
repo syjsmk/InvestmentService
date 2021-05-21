@@ -108,16 +108,6 @@ public class InvestmentServiceImpl implements InvestmentService {
 
         R2dbcEntityTemplate template = new R2dbcEntityTemplate(connectionFactory);
 
-//        var result = template.insert(
-//                UserInvestmentGoods.builder()
-//                        .userId(userId)
-//                        .goodsId(goodsId)
-//                        .userInvestingAmount(investmentAmount)
-//                        .investDate(LocalDateTime.now())
-//                        .build()
-//        );
-
-
         return template.getDatabaseClient()
                 .sql(
                         "SELECT " +
@@ -165,7 +155,7 @@ public class InvestmentServiceImpl implements InvestmentService {
                             );
                         } else {
 
-                            var update = template.update(InvestmentGoodsVO.class)
+                            Mono<Integer> update = template.update(InvestmentGoodsVO.class)
                                     .inTable(Const.Tables.investmentGoods)
                                     .matching(query(
                                             where(Const.Fields.goodsId).is(goodsId)

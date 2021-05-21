@@ -1,12 +1,17 @@
 package com.syjsmk.investmentservice.model;
 
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
 @Data
 @ToString
+@SuperBuilder
+@NoArgsConstructor
 public class InvestmentGoodsVO extends BaseInvestmentGoodsVO {
 
     // 현재 모집금액
