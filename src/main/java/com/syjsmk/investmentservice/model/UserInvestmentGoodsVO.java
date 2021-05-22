@@ -17,6 +17,7 @@ public class UserInvestmentGoodsVO extends BaseInvestmentGoodsVO {
     private Long userInvestingAmount;
 
     // 투자일시
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime investDate;
 
 }

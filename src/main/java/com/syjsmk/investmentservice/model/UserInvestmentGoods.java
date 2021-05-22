@@ -31,7 +31,6 @@ public class UserInvestmentGoods {
     private Long userInvestingAmount;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-mm-dd HH:mm:ss")
     private LocalDateTime investDate;
 
 }

@@ -2,6 +2,7 @@ package com.syjsmk.investmentservice.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.syjsmk.investmentservice.common.Const;
@@ -45,6 +46,7 @@ public class InvestmentServiceImpl implements InvestmentService {
         objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         JavaTimeModule javaTimeModule = new JavaTimeModule();
         javaTimeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(formatter));
+//        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         objectMapper.registerModule(javaTimeModule);
     }
 
@@ -64,8 +66,8 @@ public class InvestmentServiceImpl implements InvestmentService {
                             "    COALESCE(nested.current_investing_amount, 0) AS current_investing_amount, " +
                             "    COALESCE(nested.investor_count, 0) AS investor_count, " +
                             "    investment_goods.status, " +
-                            "    investment_goods.started_at, " +
-                            "    investment_goods.finished_at " +
+                            "    to_char(investment_goods.started_at, 'YYYY-MM-DD HH24:MI:SS') AS started_at, " +
+                            "    to_char(investment_goods.finished_at, 'YYYY-MM-DD HH24:MI:SS') AS finished_at " +
                             "FROM " +
                             "    investment_goods " +
                             "LEFT JOIN " +
@@ -115,8 +117,8 @@ public class InvestmentServiceImpl implements InvestmentService {
                         "    COALESCE(nested.current_investing_amount, 0) AS current_investing_amount, " +
                         "    COALESCE(nested.investor_count, 0) AS investor_count, " +
                         "    investment_goods.status, " +
-                        "    investment_goods.started_at, " +
-                        "    investment_goods.finished_at " +
+                        "    to_char(investment_goods.started_at, 'YYYY-MM-DD HH24:MI:SS') AS started_at, " +
+                        "    to_char(investment_goods.finished_at, 'YYYY-MM-DD HH24:MI:SS') AS finished_at " +
                         "FROM " +
                         "    investment_goods " +
                         "LEFT JOIN " +
@@ -210,7 +212,7 @@ public class InvestmentServiceImpl implements InvestmentService {
                                 "investment_goods.title, " +
                                 "investment_goods.total_investing_amount, " +
                                 "user_investment_goods.user_investing_amount, " +
-                                "user_investment_goods.invest_date " +
+                                "to_char(user_investment_goods.invest_date, 'YYYY-MM-DD HH24:MI:SS') AS invest_date " +
                                 "FROM " +
                                 "user_investment_goods, investment_goods " +
                                 "WHERE " +
