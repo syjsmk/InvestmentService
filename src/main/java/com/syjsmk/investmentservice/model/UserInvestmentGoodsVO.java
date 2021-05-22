@@ -1,16 +1,16 @@
 package com.syjsmk.investmentservice.model;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
 @SuperBuilder
 @ToString
 @NoArgsConstructor
+@Data
 public class UserInvestmentGoodsVO extends BaseInvestmentGoodsVO {
 
     // 나의 투자금액

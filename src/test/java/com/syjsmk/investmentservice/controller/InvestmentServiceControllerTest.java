@@ -225,7 +225,7 @@ public class InvestmentServiceControllerTest {
                 .expectBody()
                 .jsonPath("$.userId").isEqualTo(1)
                 .jsonPath("$.goodsId").isEqualTo(1)
-                .jsonPath("$.userInvestingAmount").isEqualTo(1000)
+                .jsonPath("$.investmentAmount").isEqualTo(1000)
                 .jsonPath("$.investDate").isEqualTo("2021-05-22 18:25:54");
     }
 
