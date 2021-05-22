@@ -23,6 +23,7 @@ import reactor.core.publisher.Flux;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -51,7 +52,26 @@ public class InvestmentServiceControllerTest {
                 .exchange()
                 .expectStatus().isNotFound();
 
-        Mockito.verify(investmentService, times(1)).selectAllInvestmentGoods("2021-04-01 00:00:00", "2021-05-31 00:00:00");
+        Mockito.verify(investmentService, times(1))
+                .selectAllInvestmentGoods("2021-04-01 00:00:00", "2021-05-31 00:00:00");
+
+    }
+
+    @Test
+    @DisplayName(value = "잘못된 파라미터로 요청")
+    public void testSelectAllInvestmentWithoutParameter(TestInfo testInfo) throws Exception {
+
+        Flux<InvestmentGoodsVO> mockDatas = Flux.error(new DateTimeParseException("message", "parsedData", 1));
+
+        when(investmentService.selectAllInvestmentGoods(Mockito.any(), Mockito.any())).thenReturn(mockDatas);
+
+        webTestClient.get().uri("/v1/api/investment/goods?started_at=2021-04-01 00:00:00&finished_at=5")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isBadRequest();
+
+        Mockito.verify(investmentService, times(1))
+                .selectAllInvestmentGoods("2021-04-01 00:00:00", "5");
 
     }
 
@@ -92,7 +112,8 @@ public class InvestmentServiceControllerTest {
                 .expectStatus().isOk()
                 .expectBodyList(InvestmentGoodsVO.class);
 
-        Mockito.verify(investmentService, times(1)).selectAllInvestmentGoods("2021-04-01 00:00:00", "2021-05-31 00:00:00");
+        Mockito.verify(investmentService, times(1))
+                .selectAllInvestmentGoods("2021-04-01 00:00:00", "2021-05-31 00:00:00");
 
     }
 

@@ -21,6 +21,7 @@ import reactor.core.publisher.Mono;
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 import static org.springframework.data.relational.core.query.Criteria.where;
 import static org.springframework.data.relational.core.query.Query.query;
@@ -52,49 +53,53 @@ public class InvestmentServiceImpl implements InvestmentService {
     @Override
     public Flux<InvestmentGoodsVO> selectAllInvestmentGoods(String startedAt, String finishedAt) {
 
-        log.info("selectAllInvestmentGoods: {} | {}", startedAt, finishedAt);
+        log.info("selectAllInvestmentGoods(startedAt: {}, finishedAt: {})", startedAt, finishedAt);
 
-        R2dbcEntityTemplate template = new R2dbcEntityTemplate(connectionFactory);
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Const.dateTimePattern);
+            R2dbcEntityTemplate template = new R2dbcEntityTemplate(connectionFactory);
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Const.dateTimePattern);
+            return template.getDatabaseClient()
+                    .sql(
+                            "SELECT " +
+                                    "investment_goods.goods_id, " +
+                                    "investment_goods.title, " +
+                                    "investment_goods.total_investing_amount, " +
+                                    "nested.current_investing_amount, " +
+                                    "nested.investor_count, " +
+                                    "investment_goods.status, " +
+                                    "investment_goods.started_at, " +
+                                    "investment_goods.finished_at " +
+                                    "FROM " +
+                                    "( " +
+                                    "SELECT " +
+                                    "goods_id, " +
+                                    "COUNT (DISTINCT user_id) AS investor_count, " +
+                                    "SUM(user_investing_amount) AS current_investing_amount " +
+                                    "FROM " +
+                                    "user_investment_goods " +
+                                    "GROUP BY " +
+                                    "goods_id " +
+                                    ") AS nested, investment_goods " +
+                                    "WHERE " +
+                                    "nested.goods_id = investment_goods.goods_id " +
+                                    "AND " +
+                                    "investment_goods.started_at >= '" + LocalDateTime.parse(startedAt, formatter) + "' " +
+                                    "AND " +
+                                    "investment_goods.finished_at <= '" + LocalDateTime.parse(finishedAt, formatter) + "'"
+                    )
+                    .fetch().all().map(item -> objectMapper.convertValue(item, InvestmentGoodsVO.class));
 
-        return template.getDatabaseClient()
-            .sql(
-                "SELECT " +
-                        "investment_goods.goods_id, " +
-                        "investment_goods.title, " +
-                        "investment_goods.total_investing_amount, " +
-                        "nested.current_investing_amount, " +
-                        "nested.investor_count, " +
-                        "investment_goods.status, " +
-                        "investment_goods.started_at, " +
-                        "investment_goods.finished_at " +
-                        "FROM " +
-                        "( " +
-                        "SELECT " +
-                        "goods_id, " +
-                        "COUNT (DISTINCT user_id) AS investor_count, " +
-                        "SUM(user_investing_amount) AS current_investing_amount " +
-                        "FROM " +
-                        "user_investment_goods " +
-                        "GROUP BY " +
-                        "goods_id " +
-                        ") AS nested, investment_goods " +
-                        "WHERE " +
-                        "nested.goods_id = investment_goods.goods_id " +
-                        "AND " +
-                        "investment_goods.started_at >= '" + LocalDateTime.parse(startedAt, formatter) + "' " +
-                        "AND " +
-                        "investment_goods.finished_at <= '" + LocalDateTime.parse(finishedAt, formatter) + "'"
-            )
-            .fetch().all().map(item -> objectMapper.convertValue(item, InvestmentGoodsVO.class));
+        } catch(DateTimeParseException e) {
+            return Flux.error(e);
+        }
 
     }
 
     @Override
     public Mono<UserInvestmentGoods> invest(Integer userId, Integer goodsId, Long investmentAmount) {
 
-        log.info("invest: {} | {} | {}", userId, goodsId, investmentAmount);
+        log.info("invest(userId: {}, goodsId: {}, investmentAmount: {})", userId, goodsId, investmentAmount);
 
         if(userId == null) {
             return Mono.error(new IllegalArgumentException());
@@ -165,7 +170,8 @@ public class InvestmentServiceImpl implements InvestmentService {
                                     UserInvestmentGoods.builder()
                                             .userId(userId)
                                             .goodsId(goodsId)
-                                            .userInvestingAmount(investmentGoodsVO.getTotalInvestingAmount() - investmentGoodsVO.getCurrentInvestingAmount())
+                                            .userInvestingAmount(investmentGoodsVO.getTotalInvestingAmount() -
+                                                    investmentGoodsVO.getCurrentInvestingAmount())
                                             .investDate(LocalDateTime.now())
                                             .build()
                             ));
@@ -177,7 +183,7 @@ public class InvestmentServiceImpl implements InvestmentService {
     @Override
     public Flux<UserInvestmentGoodsVO> selectUserInvestmentGoods(Integer userId) {
 
-        log.info("selectUserInvestmentGoods : {}", userId);
+        log.info("selectUserInvestmentGoods(userId: {})", userId);
 
         R2dbcEntityTemplate template = new R2dbcEntityTemplate(connectionFactory);
 

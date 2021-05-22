@@ -34,7 +34,7 @@ public class InvestmentServiceImplTest {
     @Test
     public void selectAllInvestmentGoodsSelectNothing(TestInfo testInfo) {
 
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
 
         var mockDatas = Flux.just();
 
@@ -48,7 +48,7 @@ public class InvestmentServiceImplTest {
     @Test
     public void selectAllInvestmentGoodsSuccess(TestInfo testInfo) {
 
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Const.dateTimePattern);
 
