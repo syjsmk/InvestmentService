@@ -31,22 +31,24 @@ public class InvestmentServiceImplTest {
     @InjectMocks
     private InvestmentServiceImpl investmentService;
 
-    @Mock
-    private ConnectionFactory connectionFactory;
-
-    @Mock
-    private ObjectMapper objectMapper;
-
-//    @Mock
-//    private R2dbcEntityTemplate template;
-
     @Test
-    public void selectAllInvestmentGoods(TestInfo testInfo) {
+    public void selectAllInvestmentGoodsSelectNothing(TestInfo testInfo) {
 
         MockitoAnnotations.initMocks(this);
 
-        System.out.println(connectionFactory);
-        System.out.println(objectMapper);
+        var mockDatas = Flux.just();
+
+        doReturn(mockDatas).when(investmentService).selectAllInvestmentGoods(Mockito.any(), Mockito.any());
+
+        var result = investmentService.selectAllInvestmentGoods("2021-03-01 00:00:00", "2021-03-31 00:00:00");
+
+        assertEquals(result.collectList().block().size(), 0);
+    }
+
+    @Test
+    public void selectAllInvestmentGoodsSuccess(TestInfo testInfo) {
+
+        MockitoAnnotations.initMocks(this);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Const.dateTimePattern);
 
@@ -78,7 +80,6 @@ public class InvestmentServiceImplTest {
         var result = investmentService.selectAllInvestmentGoods("2021-04-01 00:00:00", "2021-05-31 00:00:00");
 
         assertEquals(result.collectList().block().size(), 2);
-
     }
 
 }

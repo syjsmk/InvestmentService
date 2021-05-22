@@ -33,8 +33,11 @@ dependencies {
     // https://mvnrepository.com/artifact/io.r2dbc/r2dbc-postgresql
     implementation group: 'io.r2dbc', name: 'r2dbc-postgresql', version: '0.8.7.RELEASE'
 
-    // https://mvnrepository.com/artifact/org.mockito/mockito-all
-    testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
+//    // https://mvnrepository.com/artifact/org.mockito/mockito-all
+//    testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
+
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.3.11.RELEASE'
 
 }
 
