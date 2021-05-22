@@ -3,3 +3,13 @@ spring:
     url: r2dbc:postgresql://localhost:5432/investment
     username: admin
     password: admin
+
+---
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/investment_test
+    username: admin
+    password: admin
+  config:
+    activate:
+      on-profile: test

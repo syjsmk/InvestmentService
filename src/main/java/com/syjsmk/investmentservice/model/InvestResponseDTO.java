@@ -18,7 +18,7 @@ public class InvestResponseDTO {
     // 총 투자 모집금액
     private Long totalInvestingAmount;
 
-    private Long userInvestingAmount;
+    private Long investmentAmount;
 
     // 투자모집상태 (모집중, 모집완료)
     private Boolean status;

@@ -204,7 +204,7 @@ public class InvestmentServiceControllerTest {
                 .userId(1)
                 .goodsId(1)
                 .totalInvestingAmount(100000L)
-                .userInvestingAmount(1000L)
+                .investmentAmount(1000L)
                 .status(true)
                 .investDate(LocalDateTime.parse("2021-05-22 18:25:54", formatter))
                 .build());
