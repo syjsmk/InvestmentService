@@ -1,7 +1,8 @@
 package com.syjsmk.investmentservice.controller;
 
 import com.syjsmk.investmentservice.common.Const;
-import com.syjsmk.investmentservice.model.UserInvestDTO;
+import com.syjsmk.investmentservice.model.InvestRequestDTO;
+import com.syjsmk.investmentservice.model.InvestResponseDTO;
 import com.syjsmk.investmentservice.model.UserInvestmentGoods;
 import com.syjsmk.investmentservice.model.UserInvestmentGoodsVO;
 import com.syjsmk.investmentservice.service.InvestmentService;
@@ -39,11 +40,11 @@ public class InvestmentServiceController {
     }
 
     @PostMapping("/user/goods")
-    public Mono<ResponseEntity<UserInvestmentGoods>> invest(
+    public Mono<ResponseEntity<InvestResponseDTO>> invest(
             @RequestHeader(Const.Params.xUserId) Integer userId,
-            @RequestBody UserInvestDTO userInvestDto
+            @RequestBody InvestRequestDTO investRequestDto
     ) {
-        return investmentService.invest(userId, userInvestDto.getGoodsId(), userInvestDto.getInvestmentAmount())
+        return investmentService.invest(userId, investRequestDto.getGoodsId(), investRequestDto.getInvestmentAmount())
                 .map(userInvestmentGoods -> ResponseEntity.ok().body(userInvestmentGoods))
                 .defaultIfEmpty(ResponseEntity.notFound().build())
                 .onErrorReturn(ResponseEntity.badRequest().build());

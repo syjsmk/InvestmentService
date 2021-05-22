@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class UserInvestDTO {
+public class InvestRequestDTO {
 
     // 상품 id
     @JsonProperty("goodsId")

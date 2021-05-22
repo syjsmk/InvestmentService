@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.syjsmk.investmentservice.common.Const;
+import com.syjsmk.investmentservice.model.InvestResponseDTO;
 import com.syjsmk.investmentservice.model.InvestmentGoodsVO;
 import com.syjsmk.investmentservice.model.UserInvestmentGoods;
 import com.syjsmk.investmentservice.model.UserInvestmentGoodsVO;
@@ -97,7 +98,7 @@ public class InvestmentServiceImpl implements InvestmentService {
     }
 
     @Override
-    public Mono<UserInvestmentGoods> invest(Integer userId, Integer goodsId, Long investmentAmount) {
+    public Mono<InvestResponseDTO> invest(Integer userId, Integer goodsId, Long investmentAmount) {
 
         log.info("invest(userId: {}, goodsId: {}, investmentAmount: {})", userId, goodsId, investmentAmount);
 
@@ -147,9 +148,18 @@ public class InvestmentServiceImpl implements InvestmentService {
                 .flatMap(investmentGoodsVO -> {
 
                     if(!investmentGoodsVO.getStatus()) {
-                        return Mono.empty();
+                        return Mono.just(
+                                InvestResponseDTO.builder()
+                                    .userId(userId)
+                                    .goodsId(goodsId)
+                                    .totalInvestingAmount(investmentGoodsVO.getTotalInvestingAmount())
+                                    .userInvestingAmount(0L)
+                                    .status(investmentGoodsVO.getStatus())
+                                    .investDate(LocalDateTime.now())
+                                    .build());
                     } else {
 
+                        // 상품의 현재 모집금액 + 투자 금액이 상품의 총 투자모집 금액보다 적은 경우
                         if(investmentGoodsVO.getCurrentInvestingAmount() + investmentAmount < investmentGoodsVO.getTotalInvestingAmount()) {
 
                             return template.insert(
@@ -159,7 +169,14 @@ public class InvestmentServiceImpl implements InvestmentService {
                                             .userInvestingAmount(investmentAmount)
                                             .investDate(LocalDateTime.now())
                                             .build()
-                            );
+                            ).map(userInvestmentGoods -> InvestResponseDTO.builder()
+                                    .userId(userId)
+                                    .goodsId(goodsId)
+                                    .totalInvestingAmount(investmentGoodsVO.getTotalInvestingAmount())
+                                    .userInvestingAmount(userInvestmentGoods.getUserInvestingAmount())
+                                    .status(investmentGoodsVO.getStatus())
+                                    .investDate(LocalDateTime.now())
+                                    .build());
                         } else {
 
                             Mono<Integer> update = template.update(InvestmentGoodsVO.class)
@@ -176,7 +193,14 @@ public class InvestmentServiceImpl implements InvestmentService {
                                                     investmentGoodsVO.getCurrentInvestingAmount())
                                             .investDate(LocalDateTime.now())
                                             .build()
-                            ));
+                            )).map(userInvestmentGoods -> InvestResponseDTO.builder()
+                                    .userId(userId)
+                                    .goodsId(goodsId)
+                                    .totalInvestingAmount(investmentGoodsVO.getTotalInvestingAmount())
+                                    .userInvestingAmount(userInvestmentGoods.getUserInvestingAmount())
+                                    .status(false)
+                                    .investDate(LocalDateTime.now())
+                                    .build());
                         }
                     }
                 });

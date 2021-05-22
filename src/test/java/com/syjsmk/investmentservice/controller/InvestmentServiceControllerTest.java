@@ -1,6 +1,5 @@
 package com.syjsmk.investmentservice.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.syjsmk.investmentservice.common.Const;
 import com.syjsmk.investmentservice.model.*;
 import com.syjsmk.investmentservice.service.InvestmentService;
@@ -16,7 +15,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.util.LinkedMultiValueMap;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -113,14 +111,31 @@ public class InvestmentServiceControllerTest {
 
     }
 
+    @Test
+    @DisplayName(value = "투자하기 API - X-USER-ID 값이 헤더에 존재하지 않음")
+    public void testInvestUserIdNotExist(TestInfo testInfo) throws Exception {
+
+        Mono<InvestRequestDTO> mockRequest = Mono.just(InvestRequestDTO.builder()
+                .goodsId(1)
+                .investmentAmount(1000L)
+                .build());
+
+        webTestClient.post().uri("/v1/api/investment/user/goods")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("X-USER-ID", "")
+                .body(mockRequest, InvestRequestDTO.class)
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
 
     @Test
     @DisplayName(value = "투자하기 API - 잘못된 인자로 요청")
     public void testInvestToBadRequest(TestInfo testInfo) throws Exception {
 
-        Mono<UserInvestmentGoods> mockResult = Mono.error(new IllegalArgumentException());
+        Mono<InvestResponseDTO> mockResult = Mono.error(new IllegalArgumentException());
 
-        Mono<UserInvestDTO> mockRequest = Mono.just(UserInvestDTO.builder()
+        Mono<InvestRequestDTO> mockRequest = Mono.just(InvestRequestDTO.builder()
                 .goodsId(1)
                 .build());
 
@@ -129,7 +144,7 @@ public class InvestmentServiceControllerTest {
         webTestClient.post().uri("/v1/api/investment/user/goods")
                 .accept(MediaType.APPLICATION_JSON)
                 .header("X-USER-ID", "1")
-                .body(mockRequest, UserInvestDTO.class)
+                .body(mockRequest, InvestRequestDTO.class)
                 .exchange()
                 .expectStatus().isBadRequest();
     }
@@ -139,9 +154,9 @@ public class InvestmentServiceControllerTest {
     @DisplayName(value = "투자하기 API - 존재하지 않는 상품에 투자")
     public void testInvestToNotExistGoods(TestInfo testInfo) throws Exception {
 
-        Mono<UserInvestmentGoods> mockResult = Mono.empty();
+        Mono<InvestResponseDTO> mockResult = Mono.empty();
 
-        Mono<UserInvestDTO> mockRequest = Mono.just(UserInvestDTO.builder()
+        Mono<InvestRequestDTO> mockRequest = Mono.just(InvestRequestDTO.builder()
                 .goodsId(1)
                 .investmentAmount(1000L)
                 .build());
@@ -151,7 +166,7 @@ public class InvestmentServiceControllerTest {
         webTestClient.post().uri("/v1/api/investment/user/goods")
                 .accept(MediaType.APPLICATION_JSON)
                 .header("X-USER-ID", "1")
-                .body(mockRequest, UserInvestDTO.class)
+                .body(mockRequest, InvestRequestDTO.class)
                 .exchange()
                 .expectStatus().isNotFound();
     }
@@ -161,9 +176,9 @@ public class InvestmentServiceControllerTest {
     @DisplayName(value = "투자하기 API - 모집 종료된 상품에 투자")
     public void testInvestToStatusFalse(TestInfo testInfo) throws Exception {
 
-        Mono<UserInvestmentGoods> mockResult = Mono.empty();
+        Mono<InvestResponseDTO> mockResult = Mono.empty();
 
-        Mono<UserInvestDTO> mockRequest = Mono.just(UserInvestDTO.builder()
+        Mono<InvestRequestDTO> mockRequest = Mono.just(InvestRequestDTO.builder()
                 .goodsId(1)
                 .investmentAmount(1000L)
                 .build());
@@ -173,7 +188,7 @@ public class InvestmentServiceControllerTest {
         webTestClient.post().uri("/v1/api/investment/user/goods")
                 .accept(MediaType.APPLICATION_JSON)
                 .header("X-USER-ID", "1")
-                .body(mockRequest, UserInvestDTO.class)
+                .body(mockRequest, InvestRequestDTO.class)
                 .exchange()
                 .expectStatus().isNotFound();
     }
@@ -185,14 +200,16 @@ public class InvestmentServiceControllerTest {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Const.dateTimePattern);
 
-        Mono<UserInvestmentGoods> mockResult = Mono.just(UserInvestmentGoods.builder()
+        Mono<InvestResponseDTO> mockResult = Mono.just(InvestResponseDTO.builder()
                 .userId(1)
                 .goodsId(1)
+                .totalInvestingAmount(100000L)
                 .userInvestingAmount(1000L)
+                .status(true)
                 .investDate(LocalDateTime.parse("2021-05-22 18:25:54", formatter))
                 .build());
 
-        Mono<UserInvestDTO> mockRequest = Mono.just(UserInvestDTO.builder()
+        Mono<InvestRequestDTO> mockRequest = Mono.just(InvestRequestDTO.builder()
                 .goodsId(1)
                 .investmentAmount(1000L)
                 .build());
@@ -202,7 +219,7 @@ public class InvestmentServiceControllerTest {
         webTestClient.post().uri("/v1/api/investment/user/goods")
                 .accept(MediaType.APPLICATION_JSON)
                 .header("X-USER-ID", "1")
-                .body(mockRequest, UserInvestDTO.class)
+                .body(mockRequest, InvestRequestDTO.class)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -214,8 +231,8 @@ public class InvestmentServiceControllerTest {
 
 
     @Test
-    @DisplayName(value = "나의 투자상품 조회 API - 조회 기간에 해당하는 데이터가 없음")
-    public void testSelectUserInvestmentGoodsNoDataInPeriod(TestInfo testInfo) throws Exception {
+    @DisplayName(value = "나의 투자상품 조회 API - X-USER-ID에 해당하는 데이터가 없음")
+    public void testSelectUserInvestmentGoodsUserIdNotExist(TestInfo testInfo) throws Exception {
 
         Flux<UserInvestmentGoodsVO> mockDatas = Flux.empty();
 
