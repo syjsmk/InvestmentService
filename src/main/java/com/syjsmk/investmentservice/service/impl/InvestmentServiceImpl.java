@@ -113,6 +113,8 @@ public class InvestmentServiceImpl implements InvestmentService {
 
         R2dbcEntityTemplate template = new R2dbcEntityTemplate(connectionFactory);
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Const.dateTimePattern);
+
         return template.getDatabaseClient()
                 .sql(
                         "SELECT " +

@@ -44,13 +44,9 @@ public class InvestmentServiceController {
             @RequestBody UserInvestDTO userInvestDto
     ) {
         return investmentService.invest(userId, userInvestDto.getGoodsId(), userInvestDto.getInvestmentAmount())
-                .map(userInvestmentGoods -> {
-                    System.out.println(userInvestmentGoods.toString());
-                    ResponseEntity<UserInvestmentGoods> r = ResponseEntity.ok().body(userInvestmentGoods);
-                    System.out.println(r.getBody());
-                    return ResponseEntity.ok().body(userInvestmentGoods);
-                })
-                .defaultIfEmpty(ResponseEntity.notFound().build());
+                .map(userInvestmentGoods -> ResponseEntity.ok().body(userInvestmentGoods))
+                .defaultIfEmpty(ResponseEntity.notFound().build())
+                .onErrorReturn(ResponseEntity.badRequest().build());
 
     }
 

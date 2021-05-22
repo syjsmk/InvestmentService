@@ -2,10 +2,7 @@ package com.syjsmk.investmentservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.syjsmk.investmentservice.common.Const;
-import com.syjsmk.investmentservice.model.BaseInvestmentGoodsVO;
-import com.syjsmk.investmentservice.model.InvestmentGoodsVO;
-import com.syjsmk.investmentservice.model.UserInvestDTO;
-import com.syjsmk.investmentservice.model.UserInvestmentGoods;
+import com.syjsmk.investmentservice.model.*;
 import com.syjsmk.investmentservice.service.InvestmentService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,7 +16,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.util.LinkedMultiValueMap;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -40,7 +39,7 @@ public class InvestmentServiceControllerTest {
     private InvestmentService investmentService;
 
     @Test
-    @DisplayName(value = "조회 기간에 해당하는 데이터가 없음")
+    @DisplayName(value = "전체 투자 상품 조회 API - 조회 기간에 해당하는 데이터가 없음")
     public void testSelectAllInvestmentNoDataInPeriod(TestInfo testInfo) throws Exception {
 
         Flux<InvestmentGoodsVO> mockDatas = Flux.empty();
@@ -58,7 +57,7 @@ public class InvestmentServiceControllerTest {
     }
 
     @Test
-    @DisplayName(value = "잘못된 파라미터로 요청")
+    @DisplayName(value = "전체 투자 상품 조회 API - 잘못된 파라미터로 요청")
     public void testSelectAllInvestmentWithoutParameter(TestInfo testInfo) throws Exception {
 
         Flux<InvestmentGoodsVO> mockDatas = Flux.error(new DateTimeParseException("message", "parsedData", 1));
@@ -70,18 +69,15 @@ public class InvestmentServiceControllerTest {
                 .exchange()
                 .expectStatus().isBadRequest();
 
-        Mockito.verify(investmentService, times(1))
-                .selectAllInvestmentGoods("2021-04-01 00:00:00", "5");
-
     }
 
     @Test
-    @DisplayName(value = "데이터 조회 성공")
+    @DisplayName(value = "전체 투자 상품 조회 API - 조회 성공")
     public void testSelectAllInvestmentGoodsSuccess(TestInfo testInfo) throws Exception {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Const.dateTimePattern);
 
-        var mockDatas = Flux.just(
+        Flux<InvestmentGoodsVO> mockDatas = Flux.just(
                 InvestmentGoodsVO.builder()
                         .goodsId(1)
                         .title("t1")
@@ -114,6 +110,164 @@ public class InvestmentServiceControllerTest {
 
         Mockito.verify(investmentService, times(1))
                 .selectAllInvestmentGoods("2021-04-01 00:00:00", "2021-05-31 00:00:00");
+
+    }
+
+
+    @Test
+    @DisplayName(value = "투자하기 API - 잘못된 인자로 요청")
+    public void testInvestToBadRequest(TestInfo testInfo) throws Exception {
+
+        Mono<UserInvestmentGoods> mockResult = Mono.error(new IllegalArgumentException());
+
+        Mono<UserInvestDTO> mockRequest = Mono.just(UserInvestDTO.builder()
+                .goodsId(1)
+                .build());
+
+        when(investmentService.invest(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(mockResult);
+
+        webTestClient.post().uri("/v1/api/investment/user/goods")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("X-USER-ID", "1")
+                .body(mockRequest, UserInvestDTO.class)
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+
+    @Test
+    @DisplayName(value = "투자하기 API - 존재하지 않는 상품에 투자")
+    public void testInvestToNotExistGoods(TestInfo testInfo) throws Exception {
+
+        Mono<UserInvestmentGoods> mockResult = Mono.empty();
+
+        Mono<UserInvestDTO> mockRequest = Mono.just(UserInvestDTO.builder()
+                .goodsId(1)
+                .investmentAmount(1000L)
+                .build());
+
+        when(investmentService.invest(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(mockResult);
+
+        webTestClient.post().uri("/v1/api/investment/user/goods")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("X-USER-ID", "1")
+                .body(mockRequest, UserInvestDTO.class)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+
+    @Test
+    @DisplayName(value = "투자하기 API - 모집 종료된 상품에 투자")
+    public void testInvestToStatusFalse(TestInfo testInfo) throws Exception {
+
+        Mono<UserInvestmentGoods> mockResult = Mono.empty();
+
+        Mono<UserInvestDTO> mockRequest = Mono.just(UserInvestDTO.builder()
+                .goodsId(1)
+                .investmentAmount(1000L)
+                .build());
+
+        when(investmentService.invest(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(mockResult);
+
+        webTestClient.post().uri("/v1/api/investment/user/goods")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("X-USER-ID", "1")
+                .body(mockRequest, UserInvestDTO.class)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+
+    @Test
+    @DisplayName(value = "투자하기 API - 투자하기 성공")
+    public void testInvestSuccess(TestInfo testInfo) throws Exception {
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Const.dateTimePattern);
+
+        Mono<UserInvestmentGoods> mockResult = Mono.just(UserInvestmentGoods.builder()
+                .userId(1)
+                .goodsId(1)
+                .userInvestingAmount(1000L)
+                .investDate(LocalDateTime.parse("2021-05-22 18:25:54", formatter))
+                .build());
+
+        Mono<UserInvestDTO> mockRequest = Mono.just(UserInvestDTO.builder()
+                .goodsId(1)
+                .investmentAmount(1000L)
+                .build());
+
+        when(investmentService.invest(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(mockResult);
+
+        webTestClient.post().uri("/v1/api/investment/user/goods")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("X-USER-ID", "1")
+                .body(mockRequest, UserInvestDTO.class)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.userId").isEqualTo(1)
+                .jsonPath("$.goodsId").isEqualTo(1)
+                .jsonPath("$.userInvestingAmount").isEqualTo(1000)
+                .jsonPath("$.investDate").isEqualTo("2021-05-22 18:25:54");
+    }
+
+
+    @Test
+    @DisplayName(value = "나의 투자상품 조회 API - 조회 기간에 해당하는 데이터가 없음")
+    public void testSelectUserInvestmentGoodsNoDataInPeriod(TestInfo testInfo) throws Exception {
+
+        Flux<UserInvestmentGoodsVO> mockDatas = Flux.empty();
+
+        when(investmentService.selectUserInvestmentGoods(Mockito.any())).thenReturn(mockDatas);
+
+        webTestClient.get().uri("/v1/api/investment/user/goods")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("X-USER-ID", "55")
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
+    @DisplayName(value = "나의 투자상품 조회 API - 잘못된 파라미터로 요청")
+    public void testSelectUserInvestmentGoodsWithoutParameter(TestInfo testInfo) throws Exception {
+
+        webTestClient.get().uri("/v1/api/investment/user/goods")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("X-USER-ID", "dd")
+                .exchange()
+                .expectStatus().isBadRequest();
+
+    }
+
+    @Test
+    @DisplayName(value = "나의 투자상품 조회 API - 조회 성공")
+    public void testSelectUserInvestmentGoodsSuccess(TestInfo testInfo) throws Exception {
+
+        Flux<UserInvestmentGoodsVO> mockDatas = Flux.just(
+                UserInvestmentGoodsVO.builder()
+                        .goodsId(1)
+                        .title("t1")
+                        .totalInvestingAmount(100000L)
+                        .build(),
+                UserInvestmentGoodsVO.builder()
+                        .goodsId(2)
+                        .title("t2")
+                        .totalInvestingAmount(200000L)
+                        .build()
+        );
+
+        when(investmentService.selectUserInvestmentGoods(Mockito.any())).thenReturn(mockDatas);
+
+        webTestClient.get().uri("/v1/api/investment/user/goods")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("X-USER-ID", "1")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(UserInvestmentGoodsVO.class);
+
+        Mockito.verify(investmentService, times(1))
+                .selectUserInvestmentGoods(1);
 
     }
 
