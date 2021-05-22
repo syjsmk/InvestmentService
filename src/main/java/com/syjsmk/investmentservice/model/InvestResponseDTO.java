@@ -1,6 +1,7 @@
 package com.syjsmk.investmentservice.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.syjsmk.investmentservice.common.Const;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -23,8 +24,7 @@ public class InvestResponseDTO {
     // 투자모집상태 (모집중, 모집완료)
     private Boolean status;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-mm-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Const.dateTimePattern)
     private LocalDateTime investDate;
 
 }

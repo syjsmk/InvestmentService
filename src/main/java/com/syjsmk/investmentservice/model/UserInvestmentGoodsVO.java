@@ -1,6 +1,7 @@
 package com.syjsmk.investmentservice.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.syjsmk.investmentservice.common.Const;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,7 +18,7 @@ public class UserInvestmentGoodsVO extends BaseInvestmentGoodsVO {
     private Long userInvestingAmount;
 
     // 투자일시
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Const.dateTimePattern)
     private LocalDateTime investDate;
 
 }

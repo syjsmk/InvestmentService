@@ -78,7 +78,7 @@ public class InvestmentServiceControllerTest {
         Flux<InvestmentGoodsVO> mockDatas = Flux.just(
                 InvestmentGoodsVO.builder()
                         .goodsId(1)
-                        .title("t1")
+                        .title("개인신용 포트폴리오")
                         .totalInvestingAmount(100000L)
                         .currentInvestingAmount(80000L)
                         .investorCount(2)
@@ -88,7 +88,7 @@ public class InvestmentServiceControllerTest {
                         .build(),
                 InvestmentGoodsVO.builder()
                         .goodsId(2)
-                        .title("t2")
+                        .title("부동산 포트폴리오")
                         .totalInvestingAmount(200000L)
                         .currentInvestingAmount(90000L)
                         .investorCount(1)
@@ -264,12 +264,12 @@ public class InvestmentServiceControllerTest {
         Flux<UserInvestmentGoodsVO> mockDatas = Flux.just(
                 UserInvestmentGoodsVO.builder()
                         .goodsId(1)
-                        .title("t1")
+                        .title("개인신용 포트폴리오")
                         .totalInvestingAmount(100000L)
                         .build(),
                 UserInvestmentGoodsVO.builder()
                         .goodsId(2)
-                        .title("t2")
+                        .title("부동산 포트폴리오")
                         .totalInvestingAmount(200000L)
                         .build()
         );
