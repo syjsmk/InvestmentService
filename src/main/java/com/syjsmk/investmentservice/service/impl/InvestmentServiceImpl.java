@@ -17,6 +17,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -96,6 +97,7 @@ public class InvestmentServiceImpl implements InvestmentService {
     }
 
     @Override
+    @Transactional
     public Mono<InvestResponseDTO> invest(Integer userId, Integer goodsId, Long investmentAmount) {
 
         log.info("invest(userId: {}, goodsId: {}, investmentAmount: {})", userId, goodsId, investmentAmount);

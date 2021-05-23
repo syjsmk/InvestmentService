@@ -176,7 +176,9 @@ public class InvestmentServiceControllerTest {
     @DisplayName(value = "투자하기 API - 모집 종료된 상품에 투자")
     public void testInvestToStatusFalse(TestInfo testInfo) throws Exception {
 
-        Mono<InvestResponseDTO> mockResult = Mono.empty();
+        Mono<InvestResponseDTO> mockResult = Mono.just(InvestResponseDTO.builder()
+                .status(false)
+                .build());
 
         Mono<InvestRequestDTO> mockRequest = Mono.just(InvestRequestDTO.builder()
                 .goodsId(1)
@@ -190,7 +192,9 @@ public class InvestmentServiceControllerTest {
                 .header("X-USER-ID", "1")
                 .body(mockRequest, InvestRequestDTO.class)
                 .exchange()
-                .expectStatus().isNotFound();
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(false);
     }
 
 
