@@ -1,10 +1,12 @@
 package com.syjsmk.investmentservice.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class UserInvestDTO {
+@Builder
+public class InvestRequestDTO {
 
     // 상품 id
     @JsonProperty("goodsId")

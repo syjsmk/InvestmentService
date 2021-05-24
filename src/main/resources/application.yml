@@ -3,3 +3,23 @@ spring:
     url: r2dbc:postgresql://localhost:5432/investment
     username: admin
     password: admin
+    pool:
+      max-size: 50
+      max-idle-time: 1000
+      max-create-connection-time: 1000
+      initial-size: 5
+
+---
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/investment_test
+    username: admin
+    password: admin
+    pool:
+      max-idle-time: 1000
+      initial-size: 5
+      max-size: 50
+      max-create-connection-time: 1000
+  config:
+    activate:
+      on-profile: test

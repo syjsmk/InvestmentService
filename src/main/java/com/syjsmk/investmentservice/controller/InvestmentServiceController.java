@@ -1,14 +1,13 @@
 package com.syjsmk.investmentservice.controller;
 
 import com.syjsmk.investmentservice.common.Const;
-import com.syjsmk.investmentservice.model.InvestmentGoodsVO;
-import com.syjsmk.investmentservice.model.UserInvestDTO;
+import com.syjsmk.investmentservice.model.InvestRequestDTO;
+import com.syjsmk.investmentservice.model.InvestResponseDTO;
 import com.syjsmk.investmentservice.model.UserInvestmentGoods;
 import com.syjsmk.investmentservice.model.UserInvestmentGoodsVO;
 import com.syjsmk.investmentservice.service.InvestmentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -24,7 +23,10 @@ public class InvestmentServiceController {
     }
 
     @GetMapping("/goods")
-    public Mono<ResponseEntity<List<InvestmentGoodsVO>>> selectAllInvestmentGoods(@RequestParam(value = Const.Params.startedAt) String startedAt, @RequestParam(value = Const.Params.finishedAt) String finishedAt) {
+    public Mono<ResponseEntity<?>> selectAllInvestmentGoods(
+            @RequestParam(value = Const.Params.startedAt) String startedAt,
+            @RequestParam(value = Const.Params.finishedAt) String finishedAt
+    ) {
         return investmentService.selectAllInvestmentGoods(startedAt, finishedAt)
                 .collectList()
                 .map(investmentGoodsVOS -> {
@@ -33,24 +35,26 @@ public class InvestmentServiceController {
                     } else {
                         return ResponseEntity.notFound().build();
                     }
-                });
+                })
+                .onErrorReturn(ResponseEntity.badRequest().build());
     }
 
     @PostMapping("/user/goods")
-    public Mono<ResponseEntity<UserInvestmentGoods>> invest(@RequestHeader(Const.Params.xUserId) Integer userId, @RequestBody UserInvestDTO userInvestDto) {
-        return investmentService.invest(userId, userInvestDto.getGoodsId(), userInvestDto.getInvestmentAmount())
-                .map(userInvestmentGoods -> {
-                    System.out.println(userInvestmentGoods.toString());
-                    ResponseEntity<UserInvestmentGoods> r = ResponseEntity.ok().body(userInvestmentGoods);
-                    System.out.println(r.getBody());
-                    return ResponseEntity.ok().body(userInvestmentGoods);
-                })
-                .defaultIfEmpty(ResponseEntity.notFound().build());
+    public Mono<ResponseEntity<InvestResponseDTO>> invest(
+            @RequestHeader(Const.Params.xUserId) Integer userId,
+            @RequestBody InvestRequestDTO investRequestDto
+    ) {
+        return investmentService.invest(userId, investRequestDto.getGoodsId(), investRequestDto.getInvestmentAmount())
+                .map(userInvestmentGoods -> ResponseEntity.ok().body(userInvestmentGoods))
+                .defaultIfEmpty(ResponseEntity.notFound().build())
+                .onErrorReturn(ResponseEntity.badRequest().build());
 
     }
 
     @GetMapping("/user/goods")
-    public Mono<ResponseEntity<List<UserInvestmentGoodsVO>>> selectUserInvestmentGoods(@RequestHeader(Const.Params.xUserId) Integer userId) {
+    public Mono<ResponseEntity<List<UserInvestmentGoodsVO>>> selectUserInvestmentGoods(
+            @RequestHeader(Const.Params.xUserId) Integer userId
+    ) {
         return investmentService.selectUserInvestmentGoods(userId)
                 .collectList()
                 .map(userInvestmentGoodsVO -> {
@@ -61,20 +65,5 @@ public class InvestmentServiceController {
                     }
                 });
     }
-
-//    @GetMapping("/investmentgoods")
-//    public Flux<InvestmentGoodsVO> selectAllInvestmentGoods(@RequestParam String startedAt, @RequestParam String finishedAt) {
-//        return investmentService.selectAllInvestmentGoods(startedAt, finishedAt);
-//    }
-//
-//    @PostMapping("/user/investmentgoods")
-//    public Mono<UserInvestmentGoods> invest(@RequestHeader("X-USER-ID") Integer userId, @RequestBody UserInvestDTO userInvestDto) {
-//        return investmentService.invest(userId, userInvestDto.getGoodsId(), userInvestDto.getInvestmentAmount());
-//    }
-//
-//    @GetMapping("/user/investmentgoods")
-//    public Flux<UserInvestmentGoodsVO> selectUserInvestmentGoods(@RequestHeader("X-USER-ID") Integer userId) {
-//        return investmentService.selectUserInvestmentGoods(userId);
-//    }
 
 }
