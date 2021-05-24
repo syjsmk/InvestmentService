@@ -28,6 +28,15 @@
   * r2dbc가 초반에 지원한 DB가 H2, MySQL, Postgresql이었기 때문에 참고 자료가 많고 개발이 수월함
 
 
+* HTTP 요청 정의
+  * 전체 투자 상품 조회 API
+    * 데이터 조회 API기 때문에 GET 사용
+  * 투자하기 API
+    * 데이터 입력 API기 때문에 POST 사용
+  * 나의 투자상품 조회 API
+    * 데이터 조회 API기 때문에 GET 사용
+
+
 * HTTP 응답 정의
   * 전체 투자 상품 조회 API
     * 조회 성공 (200, ok)

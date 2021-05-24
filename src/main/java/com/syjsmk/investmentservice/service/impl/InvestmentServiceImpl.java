@@ -131,54 +131,50 @@ public class InvestmentServiceImpl implements InvestmentService {
                                     .investDate(LocalDateTime.now())
                                     .build());
                     } else {
-                        return insertInvest(userId, goodsId, investmentAmount, investmentGoodsVO);
+                        // 상품의 현재 모집금액 + 투자 금액이 상품의 총 투자모집 금액보다 적은 경우
+                        if(investmentGoodsVO.getCurrentInvestingAmount() + investmentAmount < investmentGoodsVO.getTotalInvestingAmount()) {
+                            return template.insert(
+                                    UserInvestmentGoods.builder()
+                                            .userId(userId)
+                                            .goodsId(goodsId)
+                                            .userInvestingAmount(investmentAmount)
+                                            .investDate(LocalDateTime.now())
+                                            .build()
+                            ).map(userInvestmentGoods -> InvestResponseDTO.builder()
+                                    .userId(userId)
+                                    .goodsId(goodsId)
+                                    .totalInvestingAmount(investmentGoodsVO.getTotalInvestingAmount())
+                                    .investmentAmount(userInvestmentGoods.getUserInvestingAmount())
+                                    .status(investmentGoodsVO.getStatus())
+                                    .investDate(LocalDateTime.now())
+                                    .build());
+                        } else {
+                            // 상품의 현재 모집금액 + 투자 금액이 상품의 총 투자모집 금액과 같거나 큰 경우 해당 상품은 모집 완료 상태가 됨
+                            Mono<Integer> update = template.update(InvestmentGoodsVO.class)
+                                    .inTable(Const.Tables.investmentGoods)
+                                    .matching(query(
+                                            where(Const.Fields.goodsId).is(goodsId)
+                                    )).apply(update(Const.Fields.status, false));
+
+                            return update.flatMap(u -> template.insert(
+                                    UserInvestmentGoods.builder()
+                                            .userId(userId)
+                                            .goodsId(goodsId)
+                                            .userInvestingAmount(investmentGoodsVO.getTotalInvestingAmount() -
+                                                    investmentGoodsVO.getCurrentInvestingAmount())
+                                            .investDate(LocalDateTime.now())
+                                            .build()
+                            )).map(userInvestmentGoods -> InvestResponseDTO.builder()
+                                    .userId(userId)
+                                    .goodsId(goodsId)
+                                    .totalInvestingAmount(investmentGoodsVO.getTotalInvestingAmount())
+                                    .investmentAmount(userInvestmentGoods.getUserInvestingAmount())
+                                    .status(false)
+                                    .investDate(LocalDateTime.now())
+                                    .build());
+                        }
                     }
                 });
-    }
-
-    private Mono<InvestResponseDTO> insertInvest(Integer userId, Integer goodsId, Long investmentAmount, InvestmentGoodsVO investmentGoodsVO) {
-        // 상품의 현재 모집금액 + 투자 금액이 상품의 총 투자모집 금액보다 적은 경우
-        if(investmentGoodsVO.getCurrentInvestingAmount() + investmentAmount < investmentGoodsVO.getTotalInvestingAmount()) {
-            return template.insert(
-                    UserInvestmentGoods.builder()
-                            .userId(userId)
-                            .goodsId(goodsId)
-                            .userInvestingAmount(investmentAmount)
-                            .investDate(LocalDateTime.now())
-                            .build()
-            ).map(userInvestmentGoods -> InvestResponseDTO.builder()
-                    .userId(userId)
-                    .goodsId(goodsId)
-                    .totalInvestingAmount(investmentGoodsVO.getTotalInvestingAmount())
-                    .investmentAmount(userInvestmentGoods.getUserInvestingAmount())
-                    .status(investmentGoodsVO.getStatus())
-                    .investDate(LocalDateTime.now())
-                    .build());
-        } else {
-            // 상품의 현재 모집금액 + 투자 금액이 상품의 총 투자모집 금액과 같거나 큰 경우 해당 상품은 모집 완료 상태가 됨
-            Mono<Integer> update = template.update(InvestmentGoodsVO.class)
-                    .inTable(Const.Tables.investmentGoods)
-                    .matching(query(
-                            where(Const.Fields.goodsId).is(goodsId)
-                    )).apply(update(Const.Fields.status, false));
-
-            return update.flatMap(u -> template.insert(
-                    UserInvestmentGoods.builder()
-                            .userId(userId)
-                            .goodsId(goodsId)
-                            .userInvestingAmount(investmentGoodsVO.getTotalInvestingAmount() -
-                                    investmentGoodsVO.getCurrentInvestingAmount())
-                            .investDate(LocalDateTime.now())
-                            .build()
-            )).map(userInvestmentGoods -> InvestResponseDTO.builder()
-                    .userId(userId)
-                    .goodsId(goodsId)
-                    .totalInvestingAmount(investmentGoodsVO.getTotalInvestingAmount())
-                    .investmentAmount(userInvestmentGoods.getUserInvestingAmount())
-                    .status(false)
-                    .investDate(LocalDateTime.now())
-                    .build());
-        }
     }
 
     @Override
